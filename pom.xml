@@ -1,0 +1,278 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.skylandsoft</groupId>
+  <artifactId>slack-api</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+  <name>slack-api</name>
+
+  <url>https://github.com/skylandsoft/slack-api</url>
+  <description>Slack API - Java SDK</description>
+  <scm>
+    <connection>scm:git:git@github.com:skylandsoft/slack-api.git</connection>
+    <developerConnection>scm:git:git@github.com:skylandsoft/slack-api.git</developerConnection>
+    <url>https://github.com/skylandsoft/slack-api</url>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/skylandsoft/slack-api</url>
+    </repository>
+    <snapshotRepository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/skylandsoft/slack-api</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <developers>
+    <developer>
+      <name>Skyland Developers</name>
+      <email>dev@skylandsoft.com</email>
+      <organization>Skyland Inc.</organization>
+      <organizationUrl>http://www.skylandsoft.com</organizationUrl>
+    </developer>
+  </developers>
+
+
+  <properties>
+    <generated-source-output-folder>${project.basedir}</generated-source-output-folder>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- JDK -->
+    <java.version>17</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+
+    <swagger-annotations.version>2.2.20</swagger-annotations.version>
+    <jersey.version>3.1.5</jersey.version>
+    <jackson.version>2.16.1</jackson.version>
+    <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
+    <commons-codec.version>1.16.1</commons-codec.version>
+    <jakarta-annotation.version>3.0.0-M1</jakarta-annotation.version>
+    <junit-jupiter.version>5.10.2</junit-jupiter.version>
+    <scribejava-apis.version>8.3.3</scribejava-apis.version>
+    <migbase64.version>2.2</migbase64.version>
+    <jsr305.version>3.0.2</jsr305.version>
+
+    <!-- Plugins -->
+    <openapi-generator-maven-plugin.version>7.11.0</openapi-generator-maven-plugin.version>
+    <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+    <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+    <replacer-plugin.version>1.5.3</replacer-plugin.version>
+    <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+  </properties>
+
+  <build>
+    <plugins>
+      <!-- activate the plugin -->
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <!-- RELEASE_VERSION -->
+        <version>${openapi-generator-maven-plugin.version}</version>
+        <!-- /RELEASE_VERSION -->
+        <executions>
+          <execution>
+            <id>slack-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <!-- specify the swagger yaml -->
+              <inputSpec>${project.basedir}/api/slack-api-20260603.yml</inputSpec>
+              <templateDirectory>${project.basedir}/src/main/template</templateDirectory>
+
+              <!-- target to generate java client code -->
+              <generatorName>java</generatorName>
+
+              <!-- pass any necessary config options -->
+              <configOptions>
+                <sourceFolder>src/main/java</sourceFolder>
+                <dateLibrary>java8</dateLibrary>
+                <java8>true</java8>
+                <additionalModelTypeAnnotations>@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)</additionalModelTypeAnnotations>
+                <library>jersey3</library>
+              </configOptions>
+
+              <!-- override the default library to jersey2 -->
+              <library>jersey3</library>
+
+              <output>${generated-source-output-folder}</output>
+              <apiPackage>${project.groupId}.slack.api</apiPackage>
+              <modelPackage>${project.groupId}.slack.model</modelPackage>
+              <invokerPackage>${project.groupId}.slack</invokerPackage>
+              <skipValidateSpec>true</skipValidateSpec>
+              <generateAliasAsModel>true</generateAliasAsModel>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <supportingFilesToGenerate>
+                JSON.java,ApiException.java,ApiClient.java,ApiResponse.java,Configuration.java,Pair.java,ServerConfiguration.java,ServerVariable.java,JavaTimeFormatter.java,StringUtil.java,HttpBasicAuth.java,HttpBearerAuth.java,ApiKeyAuth.java,Authentication.java,AbstractOpenApiSchema.java,RFC3339DateFormat.java,OAuth.java,OAuthFlow.java
+              </supportingFilesToGenerate>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven-javadoc-plugin.version}</version>
+        <configuration>
+          <source>17</source>
+          <failOnWarnings>false</failOnWarnings>
+          <doclint>none</doclint>
+          <tags>
+            <tag>
+              <name>http.response.details</name>
+              <placement>a</placement>
+              <head>Http Response Details:</head>
+            </tag>
+          </tags>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <!-- dependencies are needed for the client being generated -->
+
+    <dependency>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>${swagger-annotations.version}</version>
+    </dependency>
+
+    <!-- @Nullable annotation -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>${jsr305.version}</version>
+    </dependency>
+
+    <!-- HTTP client: jersey-client -->
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.inject</groupId>
+      <artifactId>jersey-hk2</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+
+    <!-- JSON processing: jackson -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>${jackson-databind-nullable.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.scribejava</groupId>
+      <artifactId>scribejava-apis</artifactId>
+      <version>${scribejava-apis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta-annotation.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.connectors</groupId>
+      <artifactId>jersey-apache-connector</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <!-- Override transitive vulnerable dependency commons-codec:1.11 introduced by jersey-apache-connector -->
+    <!-- Vulnerability: Cxeb68d52e-5509 3.7 Exposure of Sensitive Information to an Unauthorized Actor vulnerability with Low severity found -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${commons-codec.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.brsanthu</groupId>
+      <artifactId>migbase64</artifactId>
+      <version>${migbase64.version}</version>
+    </dependency>
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
