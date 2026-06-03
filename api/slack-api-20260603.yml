@@ -1,0 +1,501 @@
+openapi: 3.1.0
+info:
+  title: Slack Web API
+  description: >
+    Access Slack workspaces programmatically: exchange OAuth credentials for
+    access tokens, list channels and conversations, open direct messages, and
+    post and update messages. Covers the Slack Web API methods used for ChatOps
+    automation. All methods return HTTP 200; inspect the `ok` flag in the response
+    body to distinguish success from the accompanying `error` string.
+  version: 1.0.0
+  contact:
+    email: dev@skylandsoft.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://slack.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: oauth
+  - name: conversations
+  - name: chat
+  - name: auth
+
+paths:
+  /oauth.v2.access:
+    post:
+      tags: [oauth]
+      operationId: oauthV2Access
+      summary: Exchanges a temporary OAuth verifier code (or refresh token) for an access token.
+      security:
+        - basicAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OauthV2AccessRequest'
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OauthV2AccessResponse'
+
+  /conversations.list:
+    get:
+      tags: [conversations]
+      operationId: conversationsList
+      summary: Lists channel-like conversations in a workspace.
+      parameters:
+        - name: types
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Comma-separated list of any of public_channel, private_channel, mpim, im.
+        - name: exclude_archived
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: team_id
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsListResponse'
+
+  /conversations.open:
+    post:
+      tags: [conversations]
+      operationId: conversationsOpen
+      summary: Opens or resumes a direct message or multi-person direct message.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationsOpenRequest'
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsOpenResponse'
+
+  /chat.postMessage:
+    post:
+      tags: [chat]
+      operationId: chatPostMessage
+      summary: Sends a message to a channel.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatPostMessageRequest'
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatPostMessageResponse'
+
+  /chat.update:
+    post:
+      tags: [chat]
+      operationId: chatUpdate
+      summary: Updates a message in place.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatUpdateRequest'
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatUpdateResponse'
+
+  /auth.test:
+    get:
+      tags: [auth]
+      operationId: authTest
+      summary: Checks authentication and returns identity of the caller.
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTestResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Slack bot (xoxb-) or user (xoxp-) token.
+    basicAuth:
+      type: http
+      scheme: basic
+      description: client_id:client_secret for oauth.v2.access.
+
+  schemas:
+
+    # ---- Request bodies ---------------------------------------------------
+
+    OauthV2AccessRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: The verifier code received in the OAuth redirect. Required for the authorization_code flow.
+        redirect_uri:
+          type: string
+        grant_type:
+          type: string
+          description: Set to refresh_token when rotating a token; omit otherwise.
+        refresh_token:
+          type: string
+        client_id:
+          type: string
+        client_secret:
+          type: string
+
+    ConversationsOpenRequest:
+      type: object
+      properties:
+        users:
+          type: string
+          description: Comma-separated list of user IDs (1-8) to DM.
+        channel:
+          type: string
+          description: Existing conversation ID to resume.
+        return_im:
+          type: boolean
+
+    ChatPostMessageRequest:
+      type: object
+      required:
+        - channel
+      properties:
+        channel:
+          type: string
+        text:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        thread_ts:
+          type: string
+        mrkdwn:
+          type: boolean
+        unfurl_links:
+          type: boolean
+        unfurl_media:
+          type: boolean
+        reply_broadcast:
+          type: boolean
+
+    ChatUpdateRequest:
+      type: object
+      required:
+        - channel
+        - ts
+      properties:
+        channel:
+          type: string
+        ts:
+          type: string
+        text:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    # ---- Shared objects ---------------------------------------------------
+
+    ResponseMetadata:
+      type: object
+      properties:
+        next_cursor:
+          type: string
+
+    TopicPurpose:
+      type: object
+      properties:
+        value:
+          type: string
+        creator:
+          type: string
+        last_set:
+          type: integer
+          format: int64
+
+    Conversation:
+      type: object
+      description: Channel-like conversation object (faithful subset of objs_conversation).
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        name_normalized:
+          type: string
+        creator:
+          type: string
+        created:
+          type: integer
+          format: int64
+        is_channel:
+          type: boolean
+        is_group:
+          type: boolean
+        is_im:
+          type: boolean
+        is_mpim:
+          type: boolean
+        is_private:
+          type: boolean
+        is_archived:
+          type: boolean
+        is_general:
+          type: boolean
+        is_member:
+          type: boolean
+        is_shared:
+          type: boolean
+        is_ext_shared:
+          type: boolean
+        is_org_shared:
+          type: boolean
+        is_read_only:
+          type: boolean
+        num_members:
+          type: integer
+        priority:
+          type: number
+        topic:
+          $ref: '#/components/schemas/TopicPurpose'
+        purpose:
+          $ref: '#/components/schemas/TopicPurpose'
+
+    Message:
+      type: object
+      description: Message object (faithful subset of objs_message).
+      properties:
+        type:
+          type: string
+        subtype:
+          type: string
+        text:
+          type: string
+        ts:
+          type: string
+        user:
+          type: string
+        bot_id:
+          type: string
+        team:
+          type: string
+        thread_ts:
+          type: string
+        username:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        domain:
+          type: string
+
+    Enterprise:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    AuthedUser:
+      type: object
+      properties:
+        id:
+          type: string
+        scope:
+          type: string
+        access_token:
+          type: string
+        token_type:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+
+    # ---- Responses --------------------------------------------------------
+
+    OauthV2AccessResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        app_id:
+          type: string
+        access_token:
+          type: string
+        token_type:
+          type: string
+        scope:
+          type: string
+        bot_user_id:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        is_enterprise_install:
+          type: boolean
+        team:
+          $ref: '#/components/schemas/Team'
+        enterprise:
+          $ref: '#/components/schemas/Enterprise'
+        authed_user:
+          $ref: '#/components/schemas/AuthedUser'
+
+    ConversationsListResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        channels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+        response_metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    ConversationsOpenResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        no_op:
+          type: boolean
+        already_open:
+          type: boolean
+        channel:
+          $ref: '#/components/schemas/Conversation'
+
+    ChatPostMessageResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        channel:
+          type: string
+        ts:
+          type: string
+        message:
+          $ref: '#/components/schemas/Message'
+
+    ChatUpdateResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        channel:
+          type: string
+        ts:
+          type: string
+        text:
+          type: string
+        message:
+          $ref: '#/components/schemas/Message'
+
+    AuthTestResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        url:
+          type: string
+        team:
+          type: string
+        user:
+          type: string
+        team_id:
+          type: string
+        user_id:
+          type: string
+        bot_id:
+          type: string
+        enterprise_id:
+          type: string
