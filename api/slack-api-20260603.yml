@@ -7,7 +7,7 @@ info:
     post and update messages. Covers the Slack Web API methods used for ChatOps
     automation. All methods return HTTP 200; inspect the `ok` flag in the response
     body to distinguish success from the accompanying `error` string.
-  version: 1.0.0
+  version: 1.1.0
   contact:
     email: dev@skylandsoft.com
   license:
@@ -25,6 +25,7 @@ tags:
   - name: conversations
   - name: chat
   - name: auth
+  - name: users
 
 paths:
   /oauth.v2.access:
@@ -158,6 +159,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthTestResponse'
+
+  /users.info:
+    get:
+      tags: [users]
+      operationId: usersInfo
+      summary: Gets information about a user.
+      parameters:
+        - name: user
+          in: query
+          required: true
+          schema:
+            type: string
+          description: User to get info on (e.g. U1234567890).
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersInfoResponse'
 
 components:
   securitySchemes:
@@ -376,6 +397,43 @@ components:
         expires_in:
           type: integer
 
+    UserProfile:
+      type: object
+      description: User profile (faithful subset of objs_user_profile).
+      properties:
+        real_name:
+          type: string
+        display_name:
+          type: string
+        email:
+          type: string
+        image_512:
+          type: string
+
+    User:
+      type: object
+      description: User object (faithful subset of objs_user).
+      properties:
+        id:
+          type: string
+        team_id:
+          type: string
+        name:
+          type: string
+        real_name:
+          type: string
+        deleted:
+          type: boolean
+        is_bot:
+          type: boolean
+        tz:
+          type: string
+        tz_offset:
+          type: integer
+          format: int32
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+
     # ---- Responses --------------------------------------------------------
 
     OauthV2AccessResponse:
@@ -499,3 +557,15 @@ components:
           type: string
         enterprise_id:
           type: string
+
+    UsersInfoResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
