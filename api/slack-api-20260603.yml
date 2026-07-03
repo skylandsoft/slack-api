@@ -3,11 +3,12 @@ info:
   title: Slack Web API
   description: >
     Access Slack workspaces programmatically: exchange OAuth credentials for
-    access tokens, list channels and conversations, open direct messages, and
-    post and update messages. Covers the Slack Web API methods used for ChatOps
+    access tokens, list channels and conversations, open direct messages,
+    read message history, and post and update messages. Covers the Slack Web API
+    methods used for ChatOps
     automation. All methods return HTTP 200; inspect the `ok` flag in the response
     body to distinguish success from the accompanying `error` string.
-  version: 1.1.0
+  version: 1.2.0
   contact:
     email: dev@skylandsoft.com
   license:
@@ -89,6 +90,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConversationsListResponse'
+
+  /conversations.history:
+    get:
+      tags: [conversations]
+      operationId: conversationsHistory
+      summary: Fetches a page of a conversation's message history.
+      parameters:
+        - name: channel
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Conversation ID to fetch history for (e.g. C1234567890).
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Maximum number of messages to return (Slack caps this; 15 for non-Marketplace apps).
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: oldest
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Only include messages after this Unix timestamp.
+        - name: latest
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Only include messages before this Unix timestamp.
+        - name: inclusive
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Include messages with the oldest or latest timestamps in results.
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsHistoryResponse'
 
   /conversations.open:
     post:
@@ -481,6 +531,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Conversation'
+        response_metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    ConversationsHistoryResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        has_more:
+          type: boolean
         response_metadata:
           $ref: '#/components/schemas/ResponseMetadata'
 
