@@ -9,7 +9,7 @@ info:
     methods used for ChatOps
     automation. All methods return HTTP 200; inspect the `ok` flag in the response
     body to distinguish success from the accompanying `error` string.
-  version: 1.3.0
+  version: 1.5.0
   contact:
     email: dev@skylandsoft.com
   license:
@@ -110,7 +110,7 @@ paths:
           required: false
           schema:
             type: integer
-          description: Maximum number of messages to return (Slack caps this; 15 for non-Marketplace apps).
+          description: Maximum number of messages to return per page (up to 999).
         - name: cursor
           in: query
           required: false
