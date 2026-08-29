@@ -4,12 +4,13 @@ info:
   description: >
     Access Slack workspaces programmatically: exchange OAuth credentials for
     access tokens, list channels and conversations, open direct messages,
-    read message history, post and update messages, and add emoji reactions.
+    read message history, post and update messages, add emoji reactions,
+    and uninstall the app from a workspace.
     Covers the Slack Web API
     methods used for ChatOps
     automation. All methods return HTTP 200; inspect the `ok` flag in the response
     body to distinguish success from the accompanying `error` string.
-  version: 1.5.0
+  version: 1.6.0
   contact:
     email: dev@skylandsoft.com
   license:
@@ -29,6 +30,7 @@ tags:
   - name: auth
   - name: users
   - name: reactions
+  - name: apps
 
 paths:
   /oauth.v2.access:
@@ -283,6 +285,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/UsersInfoResponse'
 
+  /apps.uninstall:
+    post:
+      tags: [apps]
+      operationId: appsUninstall
+      summary: Uninstalls the app from a workspace, revoking all of its tokens.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AppsUninstallRequest'
+      responses:
+        '200':
+          description: Standard 200 envelope; inspect `ok`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppsUninstallResponse'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -387,6 +408,17 @@ components:
         timestamp:
           type: string
           description: Timestamp of the message to add reaction to.
+
+    AppsUninstallRequest:
+      type: object
+      required:
+        - client_id
+        - client_secret
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
 
     # ---- Shared objects ---------------------------------------------------
 
@@ -786,6 +818,16 @@ components:
           $ref: '#/components/schemas/Message'
 
     ReactionsAddResponse:
+      type: object
+      required:
+        - ok
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: string
+
+    AppsUninstallResponse:
       type: object
       required:
         - ok
